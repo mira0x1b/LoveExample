@@ -77,13 +77,22 @@ local function playerUpdate(dt)
 		end
 	end
 end
-local function cactusSpawn() end
+local function cactusSpawn()
+	if timer.time > 3 - (score * 0.1) then
+		local randomCactus = love.math.random(#cactuses)
+		if not cactuses[randomCactus].active then
+			cactuses[randomCactus].active = true
+			cactuses[randomCactus].x = spawner
+		end
+		timer.time = 0
+	end
+end
 local function cactusUpdate(dt)
 	cactusSpawn()
 	for i = 1, #cactuses do
 		if cactuses[i].active then
 			cactuses[i].x = cactuses[i].x + cactus_speed * dt
-			if checkCollide(cactuses[i], destroyer) then
+			if cactuses[i].x < destroyer then
 				score = score + 1
 				cactuses[i].active = false
 				cactus_speed = cactus_speed - 10
@@ -93,6 +102,8 @@ local function cactusUpdate(dt)
 end
 
 function love.update(dt)
+	--timer update
+	timer:timerUpdate(dt)
 	-- only make game go forward if it isnt game over
 	if not gameOver then
 		cactusUpdate(dt)
