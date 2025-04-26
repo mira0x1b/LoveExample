@@ -1,29 +1,36 @@
+-- to do:
+-- finish game loop
+-- simplify
+-- comment
+-- send to jake
+--
+-- world variable
 local ground = { x = 0, y = 1000, w = 2100, h = 200 }
 local destroyer = { x = -400, y = 0, w = 200, h = 1000 }
--- for resetting
-local function player_proto()
-	return { x = 400, y = 400, w = 100, h = 200, delta_y = 0 }
-end
-local function cactus_proto(x)
-	if x == nil then
-		x = 2000
-	end
-	return { x = x, y = 600, w = 100, h = 400, delta_x = -250 }
-end
-local function cactuses_proto()
-	return { cactus_proto(), cactus_proto(3000), cactus_proto(3500) }
-end
 -- object variables
-local player = player_proto()
-local cactuses = cactuses_proto()
+local player = {}
+local cactuses = {}
 -- other variables
 local gameOver = false
 local score = 0
+local cactus_speed = -250
+local cactus_start = 2000
+-- for resetting
+local function reset()
+	player = { x = 400, y = 400, w = 100, h = 200, delta_y = 0 }
+	cactuses = {
+		{ x = 2000, y = 600, w = 100, h = 400, delta_x = cactus_speed },
+		{ x = 2500, y = 600, w = 100, h = 400, delta_x = cactus_speed },
+		{ x = 3000, y = 600, w = 100, h = 400, delta_x = cactus_speed },
+		{ x = 3500, y = 600, w = 200, h = 100, delta_x = cactus_speed },
+	}
+end
 
 -- loading function
 function love.load()
 	love.window.setMode(1920, 1080)
 	love.window.setVSync(0)
+	reset()
 end
 
 -- collision functions
@@ -69,7 +76,7 @@ local function cactusUpdate(dt)
 		cactuses[i].x = cactuses[i].x + cactuses[i].delta_x * dt
 		if checkCollide(cactuses[i], destroyer) then
 			score = score + 1
-			cactuses[i] = cactus_proto()
+			cactuses[i].x = cactus_start
 		end
 	end
 end
@@ -84,8 +91,7 @@ function love.update(dt)
 		if love.keyboard.isDown("w") then
 			gameOver = false
 			score = 0
-			player = player_proto()
-			cactuses = cactuses_proto()
+			reset()
 		end
 	end
 end
