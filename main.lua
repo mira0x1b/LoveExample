@@ -6,7 +6,8 @@
 --
 -- world variable
 local ground = { x = 0, y = 1000, w = 2100, h = 200 }
-local destroyer = { x = -400, y = 0, w = 200, h = 1000 }
+local destroyer = -200
+local spawner = 2000
 -- object variables
 local player = {}
 local cactuses = {}
@@ -14,16 +15,21 @@ local cactuses = {}
 local gameOver = false
 local score = 0
 local cactus_speed = -250
-local cactus_start = 2000
 -- for resetting
 local function reset()
 	player = { x = 400, y = 400, w = 100, h = 200, delta_y = 0 }
 	cactuses = {
-		{ x = 2000, y = 600, w = 100, h = 400, delta_x = cactus_speed },
-		{ x = 2500, y = 600, w = 100, h = 400, delta_x = cactus_speed },
-		{ x = 3000, y = 600, w = 100, h = 400, delta_x = cactus_speed },
-		{ x = 3500, y = 600, w = 200, h = 100, delta_x = cactus_speed },
+		{ x = 0, y = 600, w = 100, h = 400, active = false },
+		{ x = 0, y = 600, w = 100, h = 400, active = false },
+		{ x = 0, y = 600, w = 100, h = 400, active = false },
+		{ x = 0, y = 600, w = 200, h = 100, active = false },
 	}
+end
+
+-- timer
+local timer = { time = 0 }
+function timer:timerUpdate(dt)
+	self.time = self.time + dt
 end
 
 -- loading function
@@ -59,7 +65,7 @@ local function playerUpdate(dt)
 		if love.keyboard.isDown("w") then
 			player.delta_y = player.delta_y + 2
 		else
-			player.delta_y = player.delta_y + 5
+			player.delta_y = player.delta_y + 8
 		end
 	end
 	-- player move up or down
@@ -71,12 +77,17 @@ local function playerUpdate(dt)
 		end
 	end
 end
+local function cactusSpawn() end
 local function cactusUpdate(dt)
+	cactusSpawn()
 	for i = 1, #cactuses do
-		cactuses[i].x = cactuses[i].x + cactuses[i].delta_x * dt
-		if checkCollide(cactuses[i], destroyer) then
-			score = score + 1
-			cactuses[i].x = cactus_start
+		if cactuses[i].active then
+			cactuses[i].x = cactuses[i].x + cactus_speed * dt
+			if checkCollide(cactuses[i], destroyer) then
+				score = score + 1
+				cactuses[i].active = false
+				cactus_speed = cactus_speed - 10
+			end
 		end
 	end
 end
@@ -95,19 +106,20 @@ function love.update(dt)
 		end
 	end
 end
--- to make drawing easier
-local function colorRectDraw(r, g, b, obj)
-	love.graphics.setColor(r, g, b, 1)
-	love.graphics.rectangle("fill", obj.x, obj.y, obj.w, obj.h)
-end
 
 function love.draw()
-	--game Over
-	colorRectDraw(0.9, 0.5, 0.9, player)
+	love.graphics.setBackgroundColor(0.1, 0.1, 0.2)
+	love.graphics.setColor(0.7, 0.7, 0.7, 1)
+	love.graphics.rectangle("fill", player.x, player.y, player.w, player.h)
 	for i = 1, #cactuses do
-		colorRectDraw(0.6, 0.5, 0.9, cactuses[i])
+		if cactuses[i].active then
+			love.graphics.setColor(0.5, 0.9, 0.4, 1)
+			love.graphics.rectangle("fill", cactuses[i].x, cactuses[i].y, cactuses[i].w, cactuses[i].h)
+		end
 	end
-	colorRectDraw(0.8, 0.9, 0.9, ground)
+	-- draw ground
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.rectangle("fill", ground.x, ground.y, ground.w, ground.h)
 	-- draw score
 	love.graphics.print(score, 100, 100)
 end
